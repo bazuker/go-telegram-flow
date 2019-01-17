@@ -209,7 +209,6 @@ func (e *Node) build(basePath, lang string) {
 	Default handler for pagination
 */
 func (e *Node) handle(c *tb.Callback) {
-	log.Println("wtf")
 	err := e.Flow.Bot.Respond(c)
 	if err != nil {
 		log.Println("failed to respond", c.Sender.ID, err)
