@@ -11,7 +11,7 @@ import (
 /*
 	An element of a menu that holds all required information by a page
 	a.k.a a button that holds other buttons for the next page
- */
+*/
 type Node struct {
 	Id         string
 	Flow       *Flow
@@ -27,17 +27,17 @@ type Node struct {
 
 /*
 	Creates a new node in the flow
- */
+*/
 func newNode(root *Flow, text string, endpoint FlowCallback, prev *Node) *Node {
 	id := atomic.AddUint32(&root.Serial, 1)
 	return &Node{
-		Id: strconv.Itoa(int(id)),
-		Flow: root,
-		Text: text,
-		Path: text,
-		Endpoint: endpoint,
-		Prev: prev,
-		Markup: make(map[string]*tb.ReplyMarkup),
+		Id:         strconv.Itoa(int(id)),
+		Flow:       root,
+		Text:       text,
+		Path:       text,
+		Endpoint:   endpoint,
+		Prev:       prev,
+		Markup:     make(map[string]*tb.ReplyMarkup),
 		MustUpdate: false,
 	}
 }
@@ -45,7 +45,7 @@ func newNode(root *Flow, text string, endpoint FlowCallback, prev *Node) *Node {
 /*
 	Adds a new node to the current node
 	Returns the current node
- */
+*/
 func (e *Node) Add(text string, endpoint FlowCallback) *Node {
 	e.AddSub(text, endpoint)
 	return e
@@ -54,7 +54,7 @@ func (e *Node) Add(text string, endpoint FlowCallback) *Node {
 /*
 	Adds a new node with many sub-nodes to the current node
 	Returns the current node
- */
+*/
 func (e *Node) AddWith(text string, endpoint FlowCallback, elements ...*Node) *Node {
 	newElement := e.AddSub(text, endpoint)
 	newElement.AddManySub(elements)
@@ -64,7 +64,7 @@ func (e *Node) AddWith(text string, endpoint FlowCallback, elements ...*Node) *N
 /*
 	Adds a new sub node
 	Returns the new node
- */
+*/
 func (e *Node) AddSub(text string, endpoint FlowCallback) *Node {
 	newElement := newNode(e.Flow, text, endpoint, e)
 	if e.Nodes == nil {
@@ -79,7 +79,7 @@ func (e *Node) AddSub(text string, endpoint FlowCallback) *Node {
 /*
 	Adds many new sub nodes
 	Returns the current node
- */
+*/
 func (e *Node) AddManySub(elements []*Node) *Node {
 	if e.Nodes == nil {
 		e.Nodes = make([]*Node, len(elements))
@@ -96,7 +96,7 @@ func (e *Node) AddManySub(elements []*Node) *Node {
 /*
 	Sets a new caption for the flow
 	that will be updated after .next was called
- */
+*/
 func (e *Node) SetCaption(c *tb.Callback, text string) *Node {
 	if d, ok := e.Flow.GetDialog(c.Sender.ID); ok {
 		if d.Message.Text != text {
@@ -131,7 +131,7 @@ func (e *Node) SetLanguage(c *tb.Callback, lang string) *Node {
 
 /*
 	Goes back to the previous menu
- */
+*/
 func (e *Node) back(c *tb.Callback) *Node {
 	if e.Prev == nil || e.Prev.Prev == nil {
 		return nil
@@ -152,7 +152,7 @@ func (e *Node) back(c *tb.Callback) *Node {
 
 /*
 	Continues to the following and/or updates the menu
- */
+*/
 func (e *Node) next(c *tb.Callback) {
 	nodes := len(e.Nodes)
 	if nodes < 1 && !e.MustUpdate {
@@ -178,7 +178,7 @@ func (e *Node) next(c *tb.Callback) {
 
 /*
 	Builds the flow and creates markup for a tree of nodes in a specified locale
- */
+*/
 func (e *Node) build(basePath, lang string) {
 	if e.Prev != nil {
 		e.Path = basePath + "/" + e.Text
@@ -207,7 +207,7 @@ func (e *Node) build(basePath, lang string) {
 
 /*
 	Default handler for pagination
- */
+*/
 func (e *Node) handle(c *tb.Callback) {
 	log.Println("wtf")
 	err := e.Flow.Bot.Respond(c)

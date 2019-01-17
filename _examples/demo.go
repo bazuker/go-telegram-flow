@@ -27,21 +27,21 @@ func Run() {
 	}
 	/*
 
-				An example of a menu
+					An example of a menu
 
-	---------------------------------------------
-		greetings -> say hello
-	---------------------------------------------
-						pizza -> margarita ...
-								 <-back
-		orders  -> 		sushi -> nigiri ...
-								 <-back
-					 	<-back
-	---------------------------------------------
-		invoice -> show the total
-	---------------------------------------------
-		language -> switch the language
-	---------------------------------------------
+		---------------------------------------------
+			greetings -> say hello
+		---------------------------------------------
+							pizza -> margarita ...
+									 <-back
+			orders  -> 		sushi -> nigiri ...
+									 <-back
+						 	<-back
+		---------------------------------------------
+			invoice -> show the total
+		---------------------------------------------
+			language -> switch the language
+		---------------------------------------------
 
 	*/
 	flow.Root.
@@ -60,7 +60,7 @@ func Run() {
 		Add("language", userPressLanguage).Flow.Build("en").Build("ru")
 
 	b.Handle("/start", func(m *tb.Message) {
-		err = flow.Display(m.Sender,  "Hello there", defaultLocale)
+		err = flow.Display(m.Sender, "Hello there", defaultLocale)
 		if err != nil {
 			log.Println("failed to display the menu", err)
 		}
@@ -81,21 +81,21 @@ func userPressGreeting(e *menu.Node, c *tb.Callback) bool {
 
 func userOrderSushi(e *menu.Node, c *tb.Callback) bool {
 	log.Println(c.Sender.Recipient(), "press", e.Text)
-	e.SetCaption(c, "Added " + e.Text + " to your order")
+	e.SetCaption(c, "Added "+e.Text+" to your order")
 	total += 5
 	return true
 }
 
 func userOrderPizza(e *menu.Node, c *tb.Callback) bool {
 	log.Println(c.Sender.Recipient(), "press", e.Text)
-	e.SetCaption(c, "Added " + e.Text + " to your order")
+	e.SetCaption(c, "Added "+e.Text+" to your order")
 	total += 10
 	return true
 }
 
 func userPressInvoice(e *menu.Node, c *tb.Callback) bool {
 	log.Println(c.Sender.Recipient(), "press", e.Text)
-	e.SetCaption(c, "Your total is $" + strconv.Itoa(total))
+	e.SetCaption(c, "Your total is $"+strconv.Itoa(total))
 	return true
 }
 
