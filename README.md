@@ -13,17 +13,18 @@ This library is based on [this telegram bot package](https://github.com/tucnak/t
 
 To see the full example check **_examples** directory
 ```Go
-flow.Root.Add("greetings", userPressGreeting).
+	flow.GetRoot().
+		Add("greetings", userPressGreeting).
 		AddWith("order", userPress,
-			flow.New("pizza", userPress).
+			flow.NewNode("pizza", userPress).
 				Add("margarita", userOrderPizza).
 				Add("pepperoni", userOrderPizza).Add("back", userPressBack),
-			flow.New("sushi", userPress).
+			flow.NewNode("sushi", userPress).
 				Add("temaki", userOrderSushi).
 				Add("nigiri", userOrderSushi).Add("sasazushi", userOrderSushi).
 				Add("back", userPressBack),
-			flow.New("back", userPressBack),
+			flow.NewNode("back", userPressBack),
 		).
 		Add("invoice", userPressInvoice).
-		Add("language", userPressLanguage).Flow.Build("en").Build("ru")
+		Add("language", userPressLanguage).GetFlow().Build("en").Build("ru")
 ```

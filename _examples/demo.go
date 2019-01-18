@@ -10,9 +10,9 @@ import (
 
 var total = 0
 
-func Run() {
+func Run(token string) {
 	b, err := tb.NewBot(tb.Settings{
-		Token:  "YOUR_BOT_TOKEN_HERE",
+		Token:  token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {

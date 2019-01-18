@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	demo.Run()
+	demo.Run("YOUR_BOT_TOKEN_HERE")
 }
