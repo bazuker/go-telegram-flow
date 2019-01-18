@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"fmt"
 	"github.com/tucnak/tr"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"log"
@@ -144,10 +145,14 @@ func (e *Node) AddManySub(elements []*Node) *Node {
 
 /*
 	Sets a new caption for the flow
-	that will be updated after .next was called
+	that will be updated in the next menu iteration
+	params are automatically placed in the text if provided
 */
-func (e *Node) SetCaption(c *tb.Callback, text string) *Node {
+func (e *Node) SetCaption(c *tb.Callback, text string, params ...interface{}) *Node {
 	if d, ok := e.flow.GetDialog(c.Sender.Recipient()); ok {
+		if len(params) > 1 {
+			text = fmt.Sprintf(text, params)
+		}
 		if d.Message.Text != text {
 			d.Message.Text = text
 			e.mustUpdate = true
