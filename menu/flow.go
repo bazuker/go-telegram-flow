@@ -26,7 +26,7 @@ type Flow struct {
 	serial        uint32
 	root          *Node
 	bot           *tb.Bot
-	dialogs       map[int]*Dialog
+	dialogs       map[string]*Dialog
 	defaultLocale string
 	mx            sync.RWMutex
 }
@@ -55,7 +55,7 @@ func NewFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Flow, 
 		flowId:        flowId,
 		serial:        0,
 		bot:           bot,
-		dialogs:       make(map[int]*Dialog),
+		dialogs:       make(map[string]*Dialog),
 		defaultLocale: defaultLocale,
 		mx:            sync.RWMutex{},
 	}
@@ -95,7 +95,7 @@ func (f *Flow) GetRoot() *Node {
 /*
 	Retrieves a dialog by user id
 */
-func (f *Flow) GetDialog(id int) (*Dialog, bool) {
+func (f *Flow) GetDialog(id string) (*Dialog, bool) {
 	f.mx.RLock()
 	d, ok := f.dialogs[id]
 	f.mx.RUnlock()
@@ -106,7 +106,7 @@ func (f *Flow) GetDialog(id int) (*Dialog, bool) {
 	Sets a dialog by a user id
 	Only internal use is intended
 */
-func (f *Flow) setDialog(id int, dialog *Dialog) {
+func (f *Flow) setDialog(id string, dialog *Dialog) {
 	f.mx.Lock()
 	f.dialogs[id] = dialog
 	f.mx.Unlock()
@@ -130,11 +130,11 @@ func (f *Flow) Build(lang string) *Flow {
 /*
 	Sends a new instance of a menu to the user with a specified locale
 */
-func (f *Flow) Display(to *tb.User, text, lang string) error {
+func (f *Flow) Display(to tb.Recipient, text, lang string) error {
 	msg, err := f.bot.Send(to, text, f.root.markup[lang])
 	if err != nil {
 		return err
 	}
-	f.setDialog(to.ID, &Dialog{Message: msg, Language: lang})
+	f.setDialog(to.Recipient(), &Dialog{Message: msg, Language: lang})
 	return nil
 }

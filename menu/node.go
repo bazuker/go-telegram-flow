@@ -147,7 +147,7 @@ func (e *Node) AddManySub(elements []*Node) *Node {
 	that will be updated after .next was called
 */
 func (e *Node) SetCaption(c *tb.Callback, text string) *Node {
-	if d, ok := e.flow.GetDialog(c.Sender.ID); ok {
+	if d, ok := e.flow.GetDialog(c.Sender.Recipient()); ok {
 		if d.Message.Text != text {
 			d.Message.Text = text
 			e.mustUpdate = true
@@ -160,7 +160,7 @@ func (e *Node) SetCaption(c *tb.Callback, text string) *Node {
 	Gets a language currently used in a dialog by the user
 */
 func (e *Node) GetLanguage(c *tb.Callback) string {
-	if d, ok := e.flow.GetDialog(c.Sender.ID); ok {
+	if d, ok := e.flow.GetDialog(c.Sender.Recipient()); ok {
 		return d.Language
 	}
 	return e.flow.defaultLocale
@@ -170,7 +170,7 @@ func (e *Node) GetLanguage(c *tb.Callback) string {
 	Sets a language for the user's dialog
 */
 func (e *Node) SetLanguage(c *tb.Callback, lang string) *Node {
-	if d, ok := e.flow.GetDialog(c.Sender.ID); ok {
+	if d, ok := e.flow.GetDialog(c.Sender.Recipient()); ok {
 		d.Language = lang
 		e.mustUpdate = true
 		e.next(c)
@@ -185,7 +185,7 @@ func (e *Node) back(c *tb.Callback) *Node {
 	if e.prev == nil || e.prev.prev == nil {
 		return nil
 	}
-	d, ok := e.flow.GetDialog(c.Sender.ID)
+	d, ok := e.flow.GetDialog(c.Sender.Recipient())
 	if !ok {
 		log.Println(c.Sender.ID, "does not exist")
 		return nil
@@ -207,7 +207,7 @@ func (e *Node) next(c *tb.Callback) {
 	if nodes < 1 && !e.mustUpdate {
 		return
 	}
-	d, ok := e.flow.GetDialog(c.Sender.ID)
+	d, ok := e.flow.GetDialog(c.Sender.Recipient())
 	if !ok {
 		log.Println(c.Sender.ID, "does not exist")
 		return
