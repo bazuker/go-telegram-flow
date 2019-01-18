@@ -44,20 +44,20 @@ func Run() {
 		---------------------------------------------
 
 	*/
-	flow.Root.
+	flow.GetRoot().
 		Add("greetings", userPressGreeting).
 		AddWith("order", userPress,
-			flow.New("pizza", userPress).
+			flow.NewNode("pizza", userPress).
 				Add("margarita", userOrderPizza).
 				Add("pepperoni", userOrderPizza).Add("back", userPressBack),
-			flow.New("sushi", userPress).
+			flow.NewNode("sushi", userPress).
 				Add("temaki", userOrderSushi).
 				Add("nigiri", userOrderSushi).Add("sasazushi", userOrderSushi).
 				Add("back", userPressBack),
-			flow.New("back", userPressBack),
+			flow.NewNode("back", userPressBack),
 		).
 		Add("invoice", userPressInvoice).
-		Add("language", userPressLanguage).Flow.Build("en").Build("ru")
+		Add("language", userPressLanguage).GetFlow().Build("en").Build("ru")
 
 	b.Handle("/start", func(m *tb.Message) {
 		err = flow.Display(m.Sender, "Hello there", defaultLocale)
@@ -72,35 +72,35 @@ func Run() {
 }
 
 func userPressGreeting(e *menu.Node, c *tb.Callback) bool {
-	log.Println(c.Sender.Recipient(), "press", e.Text)
-	if _, err := e.Flow.Bot.Send(c.Sender, "Hi there"); err != nil {
+	log.Println(c.Sender.Recipient(), "press", e.GetText())
+	if _, err := e.GetFlow().GetBot().Send(c.Sender, "Hi there"); err != nil {
 		log.Println(err)
 	}
 	return true // continue
 }
 
 func userOrderSushi(e *menu.Node, c *tb.Callback) bool {
-	log.Println(c.Sender.Recipient(), "press", e.Text)
-	e.SetCaption(c, "Added "+e.Text+" to your order")
+	log.Println(c.Sender.Recipient(), "press", e.GetText())
+	e.SetCaption(c, "Added "+e.GetText()+" to your order")
 	total += 5
 	return true
 }
 
 func userOrderPizza(e *menu.Node, c *tb.Callback) bool {
-	log.Println(c.Sender.Recipient(), "press", e.Text)
-	e.SetCaption(c, "Added "+e.Text+" to your order")
+	log.Println(c.Sender.Recipient(), "press", e.GetText())
+	e.SetCaption(c, "Added "+e.GetText()+" to your order")
 	total += 10
 	return true
 }
 
 func userPressInvoice(e *menu.Node, c *tb.Callback) bool {
-	log.Println(c.Sender.Recipient(), "press", e.Text)
+	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	e.SetCaption(c, "Your total is $"+strconv.Itoa(total))
 	return true
 }
 
 func userPressLanguage(e *menu.Node, c *tb.Callback) bool {
-	log.Println(c.Sender.Recipient(), "press", e.Text)
+	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	if e.GetLanguage(c) == "en" {
 		e.SetLanguage(c, "ru")
 	} else {
@@ -110,11 +110,11 @@ func userPressLanguage(e *menu.Node, c *tb.Callback) bool {
 }
 
 func userPress(e *menu.Node, c *tb.Callback) bool {
-	log.Println(c.Sender.Recipient(), "press", e.Text)
+	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	return true
 }
 
 func userPressBack(e *menu.Node, c *tb.Callback) bool {
-	log.Println(c.Sender.Recipient(), "press", e.Text)
+	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	return false // go back
 }

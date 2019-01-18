@@ -22,10 +22,10 @@ type FlowCallback func(e *Node, c *tb.Callback) bool
 	A flow is essentially a high-level representation of a menu
 */
 type Flow struct {
-	FlowId        string
-	Serial        uint32
-	Root          *Node
-	Bot           *tb.Bot
+	flowId        string
+	serial        uint32
+	root          *Node
+	bot           *tb.Bot
 	dialogs       map[int]*Dialog
 	defaultLocale string
 	mx            sync.RWMutex
@@ -52,16 +52,44 @@ func NewFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Flow, 
 		return nil, err
 	}
 	f := &Flow{
-		FlowId:        flowId,
-		Serial:        0,
-		Bot:           bot,
+		flowId:        flowId,
+		serial:        0,
+		bot:           bot,
 		dialogs:       make(map[int]*Dialog),
 		defaultLocale: defaultLocale,
 		mx:            sync.RWMutex{},
 	}
-	atomic.StoreUint32(&f.Serial, 0)
-	f.Root = &Node{Id: "0", Flow: f, MustUpdate: false, Markup: make(map[string]*tb.ReplyMarkup)}
+	atomic.StoreUint32(&f.serial, 0)
+	f.root = &Node{Id: "0", flow: f, mustUpdate: false, markup: make(map[string]*tb.ReplyMarkup)}
 	return f, nil
+}
+
+/*
+	Get flow's unique identificator
+*/
+func (f *Flow) GetFlowId() string {
+	return f.flowId
+}
+
+/*
+	Count all nodes in the tree
+*/
+func (f *Flow) CountNodes() int {
+	return int(atomic.LoadUint32(&f.serial))
+}
+
+/*
+	Get attached Telegram bot
+*/
+func (f *Flow) GetBot() *tb.Bot {
+	return f.bot
+}
+
+/*
+	Get the root node
+*/
+func (f *Flow) GetRoot() *Node {
+	return f.root
 }
 
 /*
@@ -87,15 +115,15 @@ func (f *Flow) setDialog(id int, dialog *Dialog) {
 /*
 	Creates a new node in the flow
 */
-func (f *Flow) New(text string, endpoint FlowCallback) *Node {
-	return newNode(f, text, endpoint, f.Root)
+func (f *Flow) NewNode(text string, endpoint FlowCallback) *Node {
+	return newNode(f, text, endpoint, f.root)
 }
 
 /*
 	Builds the flow for a specified locale
 */
 func (f *Flow) Build(lang string) *Flow {
-	f.Root.build(f.FlowId, lang)
+	f.root.build(f.flowId, lang)
 	return f
 }
 
@@ -103,7 +131,7 @@ func (f *Flow) Build(lang string) *Flow {
 	Sends a new instance of a menu to the user with a specified locale
 */
 func (f *Flow) Display(to *tb.User, text, lang string) error {
-	msg, err := f.Bot.Send(to, text, f.Root.Markup[lang])
+	msg, err := f.bot.Send(to, text, f.root.markup[lang])
 	if err != nil {
 		return err
 	}
