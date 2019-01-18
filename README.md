@@ -18,12 +18,14 @@ To see the full example check **_examples** directory
 		AddWith("order", userPress,
 			flow.NewNode("pizza", userPress).
 				Add("margarita", userOrderPizza).
-				Add("pepperoni", userOrderPizza).Add("back", userPressBack),
+				Add("pepperoni", userOrderPizza).
+				Add("back", userPressBack), // traditional way of making back buttons
 			flow.NewNode("sushi", userPress).
 				Add("temaki", userOrderSushi).
-				Add("nigiri", userOrderSushi).Add("sasazushi", userOrderSushi).
+				Add("nigiri", userOrderSushi).
+				Add("sasazushi", userOrderSushi).
 				Add("back", userPressBack),
-			flow.NewNode("back", userPressBack),
+			flow.NewBackNode("back"), // a short hand for making back buttons
 		).
 		Add("invoice", userPressInvoice).
 		Add("language", userPressLanguage).GetFlow().Build("en").Build("ru")

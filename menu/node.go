@@ -151,7 +151,7 @@ func (e *Node) AddManySub(elements []*Node) *Node {
 func (e *Node) SetCaption(c *tb.Callback, text string, params ...interface{}) *Node {
 	if d, ok := e.flow.GetDialog(c.Sender.Recipient()); ok {
 		if len(params) > 0 {
-			text = fmt.Sprintf(text, params)
+			text = fmt.Sprintf(text, params...)
 		}
 		if d.Message.Text != text {
 			d.Message.Text = text
