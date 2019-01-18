@@ -129,8 +129,12 @@ func (f *Flow) Build(lang string) *Flow {
 
 /*
 	Sends a new instance of a menu to the user with a specified locale
+	Tries to delete the old menu before sending a new one
 */
 func (f *Flow) Display(to tb.Recipient, text, lang string) error {
+	if d, ok := f.GetDialog(to.Recipient()); ok {
+		f.bot.Delete(d.Message)
+	}
 	msg, err := f.bot.Send(to, text, f.root.markup[lang])
 	if err != nil {
 		return err
