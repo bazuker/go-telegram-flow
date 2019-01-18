@@ -184,15 +184,32 @@ func (e *Node) SetLanguage(c *tb.Callback, lang string) *Node {
 }
 
 /*
+	Updates the menu
+*/
+func (e *Node) update(c *tb.Callback, d *Dialog, markup *tb.ReplyMarkup) {
+	newMsg, err := e.flow.bot.Edit(d.Message, d.Message.Text, markup)
+	if err != nil {
+		log.Println("failed to continue", c.Sender.ID, err)
+		return
+	}
+	e.mustUpdate = false
+	d.Message = newMsg
+}
+
+/*
 	Goes back to the previous menu
 */
 func (e *Node) back(c *tb.Callback) *Node {
-	if e.prev == nil || e.prev.prev == nil {
-		return nil
-	}
 	d, ok := e.flow.GetDialog(c.Sender.Recipient())
 	if !ok {
 		log.Println(c.Sender.ID, "does not exist")
+		return nil
+	}
+	if e.prev == nil || e.prev.prev == nil {
+		if e.mustUpdate {
+			e.update(c, d, e.flow.root.markup[d.Language])
+			return e
+		}
 		return nil
 	}
 	newMsg, err := e.flow.bot.Edit(d.Message, d.Message.Text, e.prev.prev.markup[d.Language])
@@ -221,13 +238,7 @@ func (e *Node) next(c *tb.Callback) {
 	if nodes < 1 {
 		markup = e.prev.markup
 	}
-	newMsg, err := e.flow.bot.Edit(d.Message, d.Message.Text, markup[d.Language])
-	if err != nil {
-		log.Println("failed to continue", c.Sender.ID, err)
-		return
-	}
-	e.mustUpdate = false
-	d.Message = newMsg
+	e.update(c, d, markup[d.Language])
 }
 
 /*
