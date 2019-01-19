@@ -115,7 +115,7 @@ func (f *Flow) setDialog(id string, dialog *Dialog) {
 /*
 	Helper handler for back buttons
 */
-func (f *Flow) handleBack(e *Node, c *tb.Callback) bool {
+func (f *Flow) HandleBack(e *Node, c *tb.Callback) bool {
 	return false
 }
 
@@ -131,7 +131,7 @@ func (f *Flow) NewNode(text string, endpoint FlowCallback) *Node {
 	that automatically takes a user one page back
 */
 func (f *Flow) NewBackNode(text string) *Node {
-	return newNode(f, text, f.handleBack, f.root)
+	return newNode(f, text, f.HandleBack, f.root)
 }
 
 /*
