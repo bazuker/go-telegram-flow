@@ -12,7 +12,7 @@ import (
 	"sync"
 )
 
-type FlowCallback func(e *Node, c *tb.Message) bool
+type FlowCallback func(e *Node, c *tb.Message) *Node
 
 /*
 	A flow is chain or double-linked list of events organized by type
@@ -22,7 +22,7 @@ type Flow struct {
 	root           *Node
 	bot            *tb.Bot
 	defaultLocale  string
-	status         map[string]*Node
+	positions      map[string]*Node
 	defaultHandler FlowCallback
 	mx             sync.RWMutex
 }
@@ -35,7 +35,7 @@ var ErrChainIsEmpty = errors.New("chain has zero handlers")
 func NewFlow(flowId string, bot *tb.Bot) (*Flow, error) {
 	f := &Flow{
 		bot:            bot,
-		status:         make(map[string]*Node),
+		positions:      make(map[string]*Node),
 		defaultHandler: nil,
 		mx:             sync.RWMutex{},
 	}
@@ -65,6 +65,41 @@ func (f *Flow) GetRoot() *Node {
 }
 
 /*
+	Gets the user position in the flow
+*/
+func (f *Flow) GetPosition(of tb.Recipient) (*Node, bool) {
+	f.mx.RLock()
+	node, ok := f.positions[of.Recipient()]
+	f.mx.RUnlock()
+	return node, ok
+}
+
+/*
+	Sets the user current position in the flow
+*/
+func (f *Flow) SetPosition(of tb.Recipient, node *Node) {
+	f.mx.Lock()
+	f.positions[of.Recipient()] = node
+	f.mx.Unlock()
+}
+
+/*
+	Deletes the user current position in the flow
+*/
+func (f *Flow) DeletePosition(of tb.Recipient) {
+	f.mx.Lock()
+	delete(f.positions, of.Recipient())
+	f.mx.Unlock()
+}
+
+/*
+	Search for a node with ID
+*/
+func (f *Flow) Search(nodeId string) (*Node, bool) {
+	return f.root.SearchDown(nodeId)
+}
+
+/*
 	Get the root node
 */
 func (f *Flow) DefaultHandler(endpoint FlowCallback) *Flow {
@@ -85,7 +120,7 @@ func (f *Flow) Start(to tb.Recipient, text string, options ...interface{}) (err 
 	}
 	if err == nil {
 		f.mx.Lock()
-		f.status[to.Recipient()] = f.root.next
+		f.positions[to.Recipient()] = f.root.next
 		f.mx.Unlock()
 	}
 	return
@@ -93,39 +128,36 @@ func (f *Flow) Start(to tb.Recipient, text string, options ...interface{}) (err 
 
 /*
 	Process with the next flow iteration
-	Returns true only if a user can be taken to the next node
+	Returns true only if the iteration was successful
 */
 func (f *Flow) Process(m *tb.Message) bool {
 	if m == nil {
 		return false
 	}
-
-	recipient := m.Sender.Recipient()
-
-	f.mx.RLock()
-	node, ok := f.status[recipient]
-	f.mx.RUnlock()
+	sender := m.Sender
+	node, ok := f.GetPosition(sender)
 	if !ok {
 		// the flow hasn't started for the user
+		return false
+	}
+	if node == nil {
+		f.DeletePosition(sender)
 		return false
 	}
 	if !node.CheckEvent(m) || node.endpoint == nil {
 		// input is invalid for the particular node
 		if f.defaultHandler != nil {
-			f.defaultHandler(node, m)
+			next := f.defaultHandler(node, m)
+			if next != node {
+				f.SetPosition(sender, next)
+			}
+			return true
 		}
 		return false
 	}
-	ok = node.endpoint(node, m)
-	if ok {
-		if node.next == nil {
-			delete(f.status, recipient)
-			return true
-		}
-		f.mx.Lock()
-		f.status[recipient] = node.next
-		f.mx.Unlock()
-		return true
+	next := node.endpoint(node, m)
+	if next != node {
+		f.SetPosition(sender, next)
 	}
-	return false
+	return true
 }

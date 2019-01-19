@@ -56,15 +56,49 @@ func (e *Node) GetEndpoint() FlowCallback {
 /*
 	Get the previous node in the list
 */
-func (e *Node) GetPrevious() *Node {
+func (e *Node) Previous() *Node {
 	return e.prev
 }
 
 /*
 	Get the next node in the list
 */
-func (e *Node) GetNext() *Node {
+func (e *Node) Next() *Node {
 	return e.next
+}
+
+/*
+	Tries to find a node with ID down the list
+*/
+func (e *Node) SearchDown(nodeId string) (*Node, bool) {
+	temp := e
+	for {
+		temp = temp.next
+		if temp == nil {
+			break
+		}
+		if temp.id == nodeId {
+			return temp, true
+		}
+	}
+	return nil, false
+}
+
+/*
+	Tries to find a node with ID up the list
+*/
+func (e *Node) SearchUp(nodeId string) (*Node, bool) {
+	temp := e
+	for {
+		temp = temp.prev
+		if temp == nil {
+			break
+		}
+		if temp.id == nodeId {
+			return temp, true
+		}
+	}
+	return nil, false
 }
 
 /*

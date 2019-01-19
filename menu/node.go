@@ -80,7 +80,7 @@ func (e *Node) GetEndpoint() FlowCallback {
 /*
 	Get previous (parent) node in the tree
 */
-func (e *Node) GetPrevious() *Node {
+func (e *Node) Previous() *Node {
 	return e.prev
 }
 

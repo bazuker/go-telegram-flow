@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	demo.Run("YOUR_BOT_TOKEN_HERE")
+	const token = "YOUR_BOT_TOKE_HERE"
+	demo.Run(token)
 }
