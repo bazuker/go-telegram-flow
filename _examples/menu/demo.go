@@ -1,4 +1,4 @@
-package _examples
+package menu
 
 import (
 	"go-telegram-flow/menu"
@@ -21,7 +21,7 @@ func Run(token string) {
 
 	const defaultLocale = "en"
 
-	flow, err := menu.NewFlow("flow1", b, "_examples/lang", defaultLocale)
+	flow, err := menu.NewFlow("flow1", b, "_examples/menu/lang", defaultLocale)
 	if err != nil {
 		panic(err)
 	}

@@ -1,7 +1,7 @@
 package main
 
 import (
-	demo "go-telegram-flow/_examples"
+	demo "go-telegram-flow/_examples/menu"
 )
 
 func main() {

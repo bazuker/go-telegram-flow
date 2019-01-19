@@ -14,7 +14,7 @@ import (
 	a.k.a a button that holds other buttons for the next page
 */
 type Node struct {
-	Id         string
+	id         string
 	flow       *Flow
 	path       string
 	text       string
@@ -31,7 +31,7 @@ type Node struct {
 func newNode(root *Flow, text string, endpoint FlowCallback, prev *Node) *Node {
 	id := atomic.AddUint32(&root.serial, 1)
 	return &Node{
-		Id:         strconv.Itoa(int(id)),
+		id:         strconv.Itoa(int(id)),
 		flow:       root,
 		text:       text,
 		path:       text,
@@ -47,6 +47,13 @@ func newNode(root *Flow, text string, endpoint FlowCallback, prev *Node) *Node {
 */
 func (e *Node) GetFlow() *Flow {
 	return e.flow
+}
+
+/*
+	Get node's identificator
+*/
+func (e *Node) GetId() string {
+	return e.id
 }
 
 /*
@@ -255,7 +262,7 @@ func (e *Node) build(basePath, lang string) {
 		child.build(e.path, lang)
 		buttons[i] = []tb.InlineButton{
 			{
-				Unique: "flow" + lang + e.flow.flowId + child.Id,
+				Unique: "flow" + lang + e.flow.flowId + child.id,
 				Text:   tr.Lang(lang).Tr(child.path),
 			},
 		}

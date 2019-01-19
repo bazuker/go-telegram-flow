@@ -60,7 +60,7 @@ func NewFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Flow, 
 		mx:            sync.RWMutex{},
 	}
 	atomic.StoreUint32(&f.serial, 0)
-	f.root = &Node{Id: "0", flow: f, mustUpdate: false, markup: make(map[string]*tb.ReplyMarkup)}
+	f.root = &Node{id: "0", flow: f, mustUpdate: false, markup: make(map[string]*tb.ReplyMarkup)}
 	return f, nil
 }
 
