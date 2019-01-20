@@ -10,6 +10,11 @@ import (
 )
 
 /*
+	Callback function declaration that includes a "node" that a call was made from
+*/
+type NodeEndpoint func(e *Node, c *tb.Callback) bool
+
+/*
 	An element of a menu that holds all required information by a page
 	a.k.a a button that holds other buttons for the next page
 */
@@ -18,7 +23,7 @@ type Node struct {
 	flow       *Flow
 	path       string
 	text       string
-	endpoint   FlowCallback
+	endpoint   NodeEndpoint
 	markup     map[string]*tb.ReplyMarkup
 	prev       *Node
 	nodes      []*Node
@@ -28,7 +33,7 @@ type Node struct {
 /*
 	Creates a new node in the flow
 */
-func newNode(root *Flow, text string, endpoint FlowCallback, prev *Node) *Node {
+func newNode(root *Flow, text string, endpoint NodeEndpoint, prev *Node) *Node {
 	id := atomic.AddUint32(&root.serial, 1)
 	return &Node{
 		id:         strconv.Itoa(int(id)),
@@ -73,7 +78,7 @@ func (e *Node) GetPath() string {
 /*
 	Get node's callback endpoint
 */
-func (e *Node) GetEndpoint() FlowCallback {
+func (e *Node) GetEndpoint() NodeEndpoint {
 	return e.endpoint
 }
 
@@ -103,7 +108,7 @@ func (e *Node) GetMarkup(lang string) *tb.ReplyMarkup {
 	Adds a new node to the current node
 	Returns the current node
 */
-func (e *Node) Add(text string, endpoint FlowCallback) *Node {
+func (e *Node) Add(text string, endpoint NodeEndpoint) *Node {
 	e.AddSub(text, endpoint)
 	return e
 }
@@ -112,7 +117,7 @@ func (e *Node) Add(text string, endpoint FlowCallback) *Node {
 	Adds a new node with many sub-nodes to the current node
 	Returns the current node
 */
-func (e *Node) AddWith(text string, endpoint FlowCallback, elements ...*Node) *Node {
+func (e *Node) AddWith(text string, endpoint NodeEndpoint, elements ...*Node) *Node {
 	newElement := e.AddSub(text, endpoint)
 	newElement.AddManySub(elements)
 	return e
@@ -122,7 +127,7 @@ func (e *Node) AddWith(text string, endpoint FlowCallback, elements ...*Node) *N
 	Adds a new sub node
 	Returns the new node
 */
-func (e *Node) AddSub(text string, endpoint FlowCallback) *Node {
+func (e *Node) AddSub(text string, endpoint NodeEndpoint) *Node {
 	newElement := newNode(e.flow, text, endpoint, e)
 	if e.nodes == nil {
 		e.nodes = make([]*Node, 1)

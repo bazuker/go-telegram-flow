@@ -5,12 +5,18 @@ import (
 )
 
 /*
+	Callback function declaration that includes a "node" that a call was made from
+*/
+type NodeEndpoint func(e *Node, c *tb.Message) *Node
+
+/*
 	Node is an element in a double-linked list
 */
 type Node struct {
+	å
 	id       string
 	flow     *Flow
-	endpoint FlowCallback
+	endpoint NodeEndpoint
 	prev     *Node
 	next     *Node
 	event    string
@@ -19,7 +25,7 @@ type Node struct {
 /*
 	Creates a following element in the list
 */
-func (e *Node) Then(id string, endpoint FlowCallback, expectedEvent string) *Node {
+func (e *Node) Then(id string, endpoint NodeEndpoint, expectedEvent string) *Node {
 	newNode := &Node{
 		id:       id,
 		flow:     e.flow,
@@ -49,7 +55,7 @@ func (e *Node) GetId() string {
 /*
 	Get node's callback endpoint
 */
-func (e *Node) GetEndpoint() FlowCallback {
+func (e *Node) GetEndpoint() NodeEndpoint {
 	return e.endpoint
 }
 

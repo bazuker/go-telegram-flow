@@ -12,8 +12,6 @@ import (
 	"sync"
 )
 
-type FlowCallback func(e *Node, c *tb.Message) *Node
-
 /*
 	A flow is chain or double-linked list of events organized by type
 */
@@ -23,7 +21,7 @@ type Flow struct {
 	bot            *tb.Bot
 	defaultLocale  string
 	positions      map[string]*Node
-	defaultHandler FlowCallback
+	defaultHandler NodeEndpoint
 	mx             sync.RWMutex
 }
 
@@ -102,7 +100,7 @@ func (f *Flow) Search(nodeId string) (*Node, bool) {
 /*
 	Get the root node
 */
-func (f *Flow) DefaultHandler(endpoint FlowCallback) *Flow {
+func (f *Flow) DefaultHandler(endpoint NodeEndpoint) *Flow {
 	f.defaultHandler = endpoint
 	return f
 }

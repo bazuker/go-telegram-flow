@@ -14,11 +14,6 @@ import (
 )
 
 /*
-	Callback function description that includes a "node" that a call was made from
-*/
-type FlowCallback func(e *Node, c *tb.Callback) bool
-
-/*
 	A flow is essentially a high-level representation of a menu
 */
 type Flow struct {
@@ -113,6 +108,13 @@ func (f *Flow) setDialog(id string, dialog *Dialog) {
 }
 
 /*
+	Helper handler for forward buttons
+*/
+func (f *Flow) HandleForward(e *Node, c *tb.Callback) bool {
+	return true
+}
+
+/*
 	Helper handler for back buttons
 */
 func (f *Flow) HandleBack(e *Node, c *tb.Callback) bool {
@@ -122,7 +124,7 @@ func (f *Flow) HandleBack(e *Node, c *tb.Callback) bool {
 /*
 	Creates a new node in the flow
 */
-func (f *Flow) NewNode(text string, endpoint FlowCallback) *Node {
+func (f *Flow) NewNode(text string, endpoint NodeEndpoint) *Node {
 	return newNode(f, text, endpoint, f.root)
 }
 
