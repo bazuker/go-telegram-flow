@@ -30,21 +30,21 @@ var ErrChainIsEmpty = errors.New("chain has zero handlers")
 /*
 	Creates a new chain flow
 */
-func NewChainFlow(flowId string, bot *tb.Bot) (*Chain, error) {
+func NewChainFlow(id string, bot *tb.Bot) (*Chain, error) {
 	f := &Chain{
 		bot:            bot,
 		positions:      make(map[string]*Node),
 		defaultHandler: nil,
 		mx:             sync.RWMutex{},
 	}
-	f.root = &Node{id: flowId, flow: f, endpoint: nil, prev: nil, next: nil}
+	f.root = &Node{id: id, flow: f, endpoint: nil, prev: nil, next: nil}
 	return f, nil
 }
 
 /*
 	Get flow's unique identificator
 */
-func (f *Chain) GetFlowId() string {
+func (f *Chain) GetId() string {
 	return f.flowId
 }
 

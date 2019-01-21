@@ -42,13 +42,13 @@ type Dialog struct {
 	It will fail without a notice if you put special characters or symbols (except for underscore) in it.
 	Suggested names: flow1, flow_1, MyFlow
 */
-func NewMenuFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, error) {
+func NewMenuFlow(id string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, error) {
 	engine, err := tr.NewEngine(langDir, defaultLocale, false)
 	if err != nil {
 		return nil, err
 	}
 	f := &Menu{
-		flowId:        flowId,
+		flowId:        id,
 		serial:        0,
 		bot:           bot,
 		dialogs:       make(map[string]*Dialog),
@@ -64,7 +64,7 @@ func NewMenuFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Me
 /*
 	Get flow's unique identificator
 */
-func (f *Menu) GetFlowId() string {
+func (f *Menu) GetId() string {
 	return f.flowId
 }
 
@@ -150,7 +150,7 @@ func (f *Menu) Build(lang string) *Menu {
 	Sends a new instance of a menu to the user with a specified locale
 	Tries to delete the old menu before sending a new one
 */
-func (f *Menu) Display(to tb.Recipient, text, lang string) error {
+func (f *Menu) Start(to tb.Recipient, text, lang string) error {
 	if d, ok := f.GetDialog(to.Recipient()); ok {
 		f.bot.Delete(d.Message)
 	}

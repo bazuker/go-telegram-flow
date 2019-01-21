@@ -62,7 +62,7 @@ func Run(token string) {
 		Add("language", userPressLanguage).GetFlow().Build("en").Build("ru")
 
 	b.Handle("/start", func(m *tb.Message) {
-		err = flow.Display(m.Sender, "Hello there", defaultLocale)
+		err = flow.Start(m.Sender, "Hello there", defaultLocale)
 		if err != nil {
 			log.Println("failed to display the menu", err)
 		}
