@@ -105,14 +105,17 @@ func (f *Chain) DefaultHandler(endpoint NodeEndpoint) *Chain {
 	return f
 }
 
+/*
+	Executes the chain for the user by putting him on a first stage of the chain
+*/
 func (f *Chain) Start(to tb.Recipient, text string, options ...interface{}) (err error) {
 	if f.root.next == nil {
 		return ErrChainIsEmpty
 	}
-	if len(options) > 0 {
+	if options != nil && len(options) > 0 {
 		// a workaround for nil options
 		// otherwise the message will not be sent
-		_, err = f.GetBot().Send(to, text, options)
+		_, err = f.GetBot().Send(to, text, options...)
 	} else {
 		_, err = f.GetBot().Send(to, text)
 	}
