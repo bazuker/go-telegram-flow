@@ -20,7 +20,7 @@ type NodeEndpoint func(e *Node, c *tb.Callback) bool
 */
 type Node struct {
 	id         string
-	flow       *Flow
+	flow       *Menu
 	path       string
 	text       string
 	endpoint   NodeEndpoint
@@ -33,7 +33,7 @@ type Node struct {
 /*
 	Creates a new node in the flow
 */
-func newNode(root *Flow, text string, endpoint NodeEndpoint, prev *Node) *Node {
+func newNode(root *Menu, text string, endpoint NodeEndpoint, prev *Node) *Node {
 	id := atomic.AddUint32(&root.serial, 1)
 	return &Node{
 		id:         strconv.Itoa(int(id)),
@@ -50,7 +50,7 @@ func newNode(root *Flow, text string, endpoint NodeEndpoint, prev *Node) *Node {
 /*
 	Get related flow
 */
-func (e *Node) GetFlow() *Flow {
+func (e *Node) GetFlow() *Menu {
 	return e.flow
 }
 
@@ -98,7 +98,7 @@ func (e *Node) GetNodes() []*Node {
 
 /*
 	Get a markup in a specified language
-	Caution! Flow must be built for the specified language beforehand
+	Caution! Menu must be built for the specified language beforehand
 */
 func (e *Node) GetMarkup(lang string) *tb.ReplyMarkup {
 	return e.markup[lang]

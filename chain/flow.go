@@ -15,7 +15,7 @@ import (
 /*
 	A flow is chain or double-linked list of events organized by type
 */
-type Flow struct {
+type Chain struct {
 	flowId         string
 	root           *Node
 	bot            *tb.Bot
@@ -30,8 +30,8 @@ var ErrChainIsEmpty = errors.New("chain has zero handlers")
 /*
 	Creates a new chain flow
 */
-func NewFlow(flowId string, bot *tb.Bot) (*Flow, error) {
-	f := &Flow{
+func NewChainFlow(flowId string, bot *tb.Bot) (*Chain, error) {
+	f := &Chain{
 		bot:            bot,
 		positions:      make(map[string]*Node),
 		defaultHandler: nil,
@@ -44,28 +44,28 @@ func NewFlow(flowId string, bot *tb.Bot) (*Flow, error) {
 /*
 	Get flow's unique identificator
 */
-func (f *Flow) GetFlowId() string {
+func (f *Chain) GetFlowId() string {
 	return f.flowId
 }
 
 /*
 	Get attached Telegram bot
 */
-func (f *Flow) GetBot() *tb.Bot {
+func (f *Chain) GetBot() *tb.Bot {
 	return f.bot
 }
 
 /*
 	Get the root node
 */
-func (f *Flow) GetRoot() *Node {
+func (f *Chain) GetRoot() *Node {
 	return f.root
 }
 
 /*
 	Gets the user position in the flow
 */
-func (f *Flow) GetPosition(of tb.Recipient) (*Node, bool) {
+func (f *Chain) GetPosition(of tb.Recipient) (*Node, bool) {
 	f.mx.RLock()
 	node, ok := f.positions[of.Recipient()]
 	f.mx.RUnlock()
@@ -75,7 +75,7 @@ func (f *Flow) GetPosition(of tb.Recipient) (*Node, bool) {
 /*
 	Sets the user current position in the flow
 */
-func (f *Flow) SetPosition(of tb.Recipient, node *Node) {
+func (f *Chain) SetPosition(of tb.Recipient, node *Node) {
 	f.mx.Lock()
 	f.positions[of.Recipient()] = node
 	f.mx.Unlock()
@@ -84,7 +84,7 @@ func (f *Flow) SetPosition(of tb.Recipient, node *Node) {
 /*
 	Deletes the user current position in the flow
 */
-func (f *Flow) DeletePosition(of tb.Recipient) {
+func (f *Chain) DeletePosition(of tb.Recipient) {
 	f.mx.Lock()
 	delete(f.positions, of.Recipient())
 	f.mx.Unlock()
@@ -93,19 +93,19 @@ func (f *Flow) DeletePosition(of tb.Recipient) {
 /*
 	Search for a node with ID
 */
-func (f *Flow) Search(nodeId string) (*Node, bool) {
+func (f *Chain) Search(nodeId string) (*Node, bool) {
 	return f.root.SearchDown(nodeId)
 }
 
 /*
 	Get the root node
 */
-func (f *Flow) DefaultHandler(endpoint NodeEndpoint) *Flow {
+func (f *Chain) DefaultHandler(endpoint NodeEndpoint) *Chain {
 	f.defaultHandler = endpoint
 	return f
 }
 
-func (f *Flow) Start(to tb.Recipient, text string, options ...interface{}) (err error) {
+func (f *Chain) Start(to tb.Recipient, text string, options ...interface{}) (err error) {
 	if f.root.next == nil {
 		return ErrChainIsEmpty
 	}
@@ -128,7 +128,7 @@ func (f *Flow) Start(to tb.Recipient, text string, options ...interface{}) (err 
 	Process with the next flow iteration
 	Returns true only if the iteration was successful
 */
-func (f *Flow) Process(m *tb.Message) bool {
+func (f *Chain) Process(m *tb.Message) bool {
 	if m == nil {
 		return false
 	}

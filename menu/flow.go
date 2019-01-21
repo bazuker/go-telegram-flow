@@ -16,7 +16,7 @@ import (
 /*
 	A flow is essentially a high-level representation of a menu
 */
-type Flow struct {
+type Menu struct {
 	flowId        string
 	serial        uint32
 	root          *Node
@@ -41,12 +41,12 @@ type Dialog struct {
 	It will fail without a notice if you put special characters or symbols (except for underscore) in it.
 	Suggested names: flow1, flow_1, MyFlow
 */
-func NewFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Flow, error) {
+func NewMenuFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, error) {
 	err := tr.Init(langDir, defaultLocale)
 	if err != nil {
 		return nil, err
 	}
-	f := &Flow{
+	f := &Menu{
 		flowId:        flowId,
 		serial:        0,
 		bot:           bot,
@@ -62,35 +62,35 @@ func NewFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Flow, 
 /*
 	Get flow's unique identificator
 */
-func (f *Flow) GetFlowId() string {
+func (f *Menu) GetFlowId() string {
 	return f.flowId
 }
 
 /*
 	Count all nodes in the tree
 */
-func (f *Flow) CountNodes() int {
+func (f *Menu) CountNodes() int {
 	return int(atomic.LoadUint32(&f.serial))
 }
 
 /*
 	Get attached Telegram bot
 */
-func (f *Flow) GetBot() *tb.Bot {
+func (f *Menu) GetBot() *tb.Bot {
 	return f.bot
 }
 
 /*
 	Get the root node
 */
-func (f *Flow) GetRoot() *Node {
+func (f *Menu) GetRoot() *Node {
 	return f.root
 }
 
 /*
 	Retrieves a dialog by user id
 */
-func (f *Flow) GetDialog(id string) (*Dialog, bool) {
+func (f *Menu) GetDialog(id string) (*Dialog, bool) {
 	f.mx.RLock()
 	d, ok := f.dialogs[id]
 	f.mx.RUnlock()
@@ -101,7 +101,7 @@ func (f *Flow) GetDialog(id string) (*Dialog, bool) {
 	Sets a dialog by a user id
 	Only internal use is intended
 */
-func (f *Flow) setDialog(id string, dialog *Dialog) {
+func (f *Menu) setDialog(id string, dialog *Dialog) {
 	f.mx.Lock()
 	f.dialogs[id] = dialog
 	f.mx.Unlock()
@@ -110,21 +110,21 @@ func (f *Flow) setDialog(id string, dialog *Dialog) {
 /*
 	Helper handler for forward buttons
 */
-func (f *Flow) HandleForward(e *Node, c *tb.Callback) bool {
+func (f *Menu) HandleForward(e *Node, c *tb.Callback) bool {
 	return true
 }
 
 /*
 	Helper handler for back buttons
 */
-func (f *Flow) HandleBack(e *Node, c *tb.Callback) bool {
+func (f *Menu) HandleBack(e *Node, c *tb.Callback) bool {
 	return false
 }
 
 /*
 	Creates a new node in the flow
 */
-func (f *Flow) NewNode(text string, endpoint NodeEndpoint) *Node {
+func (f *Menu) NewNode(text string, endpoint NodeEndpoint) *Node {
 	return newNode(f, text, endpoint, f.root)
 }
 
@@ -132,14 +132,14 @@ func (f *Flow) NewNode(text string, endpoint NodeEndpoint) *Node {
 	Creates a new back button node in the flow
 	that automatically takes a user one page back
 */
-func (f *Flow) NewBackNode(text string) *Node {
+func (f *Menu) NewBackNode(text string) *Node {
 	return newNode(f, text, f.HandleBack, f.root)
 }
 
 /*
 	Builds the flow for a specified locale
 */
-func (f *Flow) Build(lang string) *Flow {
+func (f *Menu) Build(lang string) *Menu {
 	f.root.build(f.flowId, lang)
 	return f
 }
@@ -148,7 +148,7 @@ func (f *Flow) Build(lang string) *Flow {
 	Sends a new instance of a menu to the user with a specified locale
 	Tries to delete the old menu before sending a new one
 */
-func (f *Flow) Display(to tb.Recipient, text, lang string) error {
+func (f *Menu) Display(to tb.Recipient, text, lang string) error {
 	if d, ok := f.GetDialog(to.Recipient()); ok {
 		f.bot.Delete(d.Message)
 	}

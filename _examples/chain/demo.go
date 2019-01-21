@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var flow *chain.Flow
+var flow *chain.Chain
 
 var markup *tb.ReplyMarkup
 
@@ -23,7 +23,7 @@ func Run(token string) {
 		panic(err)
 	}
 
-	flow, err = chain.NewFlow("flow1", b)
+	flow, err = chain.NewChainFlow("flow1", b)
 	if err != nil {
 		panic(err)
 	}

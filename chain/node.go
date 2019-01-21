@@ -15,7 +15,7 @@ type NodeEndpoint func(e *Node, c *tb.Message) *Node
 type Node struct {
 	å
 	id       string
-	flow     *Flow
+	flow     *Chain
 	endpoint NodeEndpoint
 	prev     *Node
 	next     *Node
@@ -41,7 +41,7 @@ func (e *Node) Then(id string, endpoint NodeEndpoint, expectedEvent string) *Nod
 /*
 	Get related flow
 */
-func (e *Node) GetFlow() *Flow {
+func (e *Node) GetFlow() *Chain {
 	return e.flow
 }
 
