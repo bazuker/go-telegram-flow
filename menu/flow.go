@@ -23,6 +23,7 @@ type Menu struct {
 	bot           *tb.Bot
 	dialogs       map[string]*Dialog
 	defaultLocale string
+	engine        *tr.Engine
 	mx            sync.RWMutex
 }
 
@@ -42,7 +43,7 @@ type Dialog struct {
 	Suggested names: flow1, flow_1, MyFlow
 */
 func NewMenuFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, error) {
-	err := tr.Init(langDir, defaultLocale)
+	engine, err := tr.NewEngine(langDir, defaultLocale, false)
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +53,7 @@ func NewMenuFlow(flowId string, bot *tb.Bot, langDir, defaultLocale string) (*Me
 		bot:           bot,
 		dialogs:       make(map[string]*Dialog),
 		defaultLocale: defaultLocale,
+		engine:        engine,
 		mx:            sync.RWMutex{},
 	}
 	atomic.StoreUint32(&f.serial, 0)

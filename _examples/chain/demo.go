@@ -74,7 +74,7 @@ func Run(token string) {
 		flow.Process(m)
 	})
 
-	log.Println("starting...")
+	log.Println("starting...", b.Me.Username)
 
 	b.Start()
 }

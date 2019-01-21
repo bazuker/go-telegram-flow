@@ -13,7 +13,6 @@ type NodeEndpoint func(e *Node, c *tb.Message) *Node
 	Node is an element in a double-linked list
 */
 type Node struct {
-	å
 	id       string
 	flow     *Chain
 	endpoint NodeEndpoint

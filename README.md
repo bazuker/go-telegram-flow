@@ -5,7 +5,7 @@ Flow is a small framework for Telegram that is based on [this telegram bot packa
 go get -u github.com/kisulken/go-telegram-flow
 ```
 
-With this library you can create dynamic menus in Telegram just by defining the flow! Wow!
+With this library you can create dynamic menus & logical chains in Telegram just by defining the flow! Wow!
 
 <img src="https://drive.google.com/uc?id=174701OOF1wD6Eqs2u7K-EYfCfFlkvZTq&export=download" alt="" data-canonical-src="https://gyazo.com/eb5c5741b6a9a16c692170a41a49c858.png" width="270" height="480" />
 

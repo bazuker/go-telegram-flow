@@ -68,7 +68,7 @@ func Run(token string) {
 		}
 	})
 
-	log.Println("starting...")
+	log.Println("starting...", b.Me.Username)
 
 	b.Start()
 }

@@ -2,7 +2,6 @@ package menu
 
 import (
 	"fmt"
-	"github.com/tucnak/tr"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"log"
 	"strconv"
@@ -268,7 +267,7 @@ func (e *Node) build(basePath, lang string) {
 		buttons[i] = []tb.InlineButton{
 			{
 				Unique: "flow" + lang + e.flow.flowId + child.id,
-				Text:   tr.Lang(lang).Tr(child.path),
+				Text:   e.flow.engine.Lang(lang).Tr(child.path),
 			},
 		}
 		if child.endpoint != nil {
