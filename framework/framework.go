@@ -79,6 +79,10 @@ func (fw *BotFramework) process(m *tb.Message) {
 	}
 }
 
+func (fw *BotFramework) GetBot() *tb.Bot {
+	return fw.bot
+}
+
 func (fw *BotFramework) SetDefaultUnknownMessageHandler(handler UnknownChainMessage) *BotFramework {
 	fw.defaultHandler = handler
 	return fw
