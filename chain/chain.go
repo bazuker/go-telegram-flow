@@ -21,7 +21,7 @@ type Chain struct {
 	bot            *tb.Bot
 	defaultLocale  string
 	positions      map[string]*Node
-	defaultHandler NodeEndpoint
+	defaultHandler Callback
 	mx             sync.RWMutex
 }
 
@@ -100,7 +100,7 @@ func (f *Chain) Search(nodeId string) (*Node, bool) {
 /*
 	Get the root node
 */
-func (f *Chain) DefaultHandler(endpoint NodeEndpoint) *Chain {
+func (f *Chain) DefaultHandler(endpoint Callback) *Chain {
 	f.defaultHandler = endpoint
 	return f
 }

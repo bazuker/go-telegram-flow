@@ -11,7 +11,9 @@ import (
 /*
 	Callback function declaration that includes a "node" that a call was made from
 */
-type NodeEndpoint func(e *Node, c *tb.Callback) bool
+type Callback func(e *Node, c *tb.Callback) bool
+
+const uniquePrefix = "menuNode"
 
 /*
 	An element of a menu that holds all required information by a page
@@ -22,8 +24,8 @@ type Node struct {
 	flow       *Menu
 	path       string
 	text       string
-	endpoint   NodeEndpoint
-	markup     map[string]*tb.ReplyMarkup
+	endpoint   Callback
+	markups    map[string]*tb.ReplyMarkup
 	prev       *Node
 	nodes      []*Node
 	mustUpdate bool
@@ -32,7 +34,7 @@ type Node struct {
 /*
 	Creates a new node in the flow
 */
-func newNode(root *Menu, text string, endpoint NodeEndpoint, prev *Node) *Node {
+func newNode(root *Menu, text string, endpoint Callback, prev *Node) *Node {
 	id := atomic.AddUint32(&root.serial, 1)
 	return &Node{
 		id:         strconv.Itoa(int(id)),
@@ -41,7 +43,7 @@ func newNode(root *Menu, text string, endpoint NodeEndpoint, prev *Node) *Node {
 		path:       text,
 		endpoint:   endpoint,
 		prev:       prev,
-		markup:     make(map[string]*tb.ReplyMarkup),
+		markups:    make(map[string]*tb.ReplyMarkup),
 		mustUpdate: false,
 	}
 }
@@ -77,7 +79,7 @@ func (e *Node) GetPath() string {
 /*
 	Get node's callback endpoint
 */
-func (e *Node) GetEndpoint() NodeEndpoint {
+func (e *Node) GetEndpoint() Callback {
 	return e.endpoint
 }
 
@@ -96,18 +98,18 @@ func (e *Node) GetNodes() []*Node {
 }
 
 /*
-	Get a markup in a specified language
+	Get a markups in a specified language
 	Caution! Menu must be built for the specified language beforehand
 */
 func (e *Node) GetMarkup(lang string) *tb.ReplyMarkup {
-	return e.markup[lang]
+	return e.markups[lang]
 }
 
 /*
 	Adds a new node to the current node
 	Returns the current node
 */
-func (e *Node) Add(text string, endpoint NodeEndpoint) *Node {
+func (e *Node) Add(text string, endpoint Callback) *Node {
 	e.AddSub(text, endpoint)
 	return e
 }
@@ -116,7 +118,7 @@ func (e *Node) Add(text string, endpoint NodeEndpoint) *Node {
 	Adds a new node with many sub-nodes to the current node
 	Returns the current node
 */
-func (e *Node) AddWith(text string, endpoint NodeEndpoint, elements ...*Node) *Node {
+func (e *Node) AddWith(text string, endpoint Callback, elements ...*Node) *Node {
 	newElement := e.AddSub(text, endpoint)
 	newElement.AddManySub(elements)
 	return e
@@ -126,7 +128,7 @@ func (e *Node) AddWith(text string, endpoint NodeEndpoint, elements ...*Node) *N
 	Adds a new sub node
 	Returns the new node
 */
-func (e *Node) AddSub(text string, endpoint NodeEndpoint) *Node {
+func (e *Node) AddSub(text string, endpoint Callback) *Node {
 	newElement := newNode(e.flow, text, endpoint, e)
 	if e.nodes == nil {
 		e.nodes = make([]*Node, 1)
@@ -218,12 +220,12 @@ func (e *Node) back(c *tb.Callback) *Node {
 	}
 	if e.prev == nil || e.prev.prev == nil {
 		if e.mustUpdate {
-			e.update(c, d, e.flow.root.markup[d.Language])
+			e.update(c, d, e.flow.root.markups[d.Language])
 			return e
 		}
 		return nil
 	}
-	newMsg, err := e.flow.bot.Edit(d.Message, d.Message.Text, e.prev.prev.markup[d.Language])
+	newMsg, err := e.flow.bot.Edit(d.Message, d.Message.Text, e.prev.prev.markups[d.Language])
 	if err != nil {
 		log.Println("failed to back", c.Sender.ID, err)
 		return nil
@@ -245,15 +247,15 @@ func (e *Node) next(c *tb.Callback) {
 		log.Println(c.Sender.ID, "does not exist")
 		return
 	}
-	markup := e.markup
+	markup := e.markups
 	if nodes < 1 {
-		markup = e.prev.markup
+		markup = e.prev.markups
 	}
 	e.update(c, d, markup[d.Language])
 }
 
 /*
-	Builds the flow and creates markup for a tree of nodes in a specified locale
+	Builds the flow and creates markups for a tree of nodes in a specified locale
 */
 func (e *Node) build(basePath, lang string) {
 	if e.prev != nil {
@@ -266,7 +268,7 @@ func (e *Node) build(basePath, lang string) {
 		child.build(e.path, lang)
 		buttons[i] = []tb.InlineButton{
 			{
-				Unique: "flow" + lang + e.flow.flowId + child.id,
+				Unique: uniquePrefix + lang + e.flow.flowId + child.id,
 				Text:   e.flow.engine.Lang(lang).Tr(child.path),
 			},
 		}
@@ -276,7 +278,7 @@ func (e *Node) build(basePath, lang string) {
 			e.flow.bot.Handle(&buttons[i][0], child.handleDeadEnd)
 		}
 	}
-	e.markup[lang] = &tb.ReplyMarkup{
+	e.markups[lang] = &tb.ReplyMarkup{
 		InlineKeyboard: buttons,
 	}
 }

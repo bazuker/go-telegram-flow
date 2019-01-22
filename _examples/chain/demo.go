@@ -13,8 +13,6 @@ var flow *chain.Chain
 var markup *tb.ReplyMarkup
 
 func Run(token string) {
-	var err error
-
 	b, err := tb.NewBot(tb.Settings{
 		Token:  token,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},

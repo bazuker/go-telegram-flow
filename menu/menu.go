@@ -57,7 +57,7 @@ func NewMenuFlow(id string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, 
 		mx:            sync.RWMutex{},
 	}
 	atomic.StoreUint32(&f.serial, 0)
-	f.root = &Node{id: "0", flow: f, mustUpdate: false, markup: make(map[string]*tb.ReplyMarkup)}
+	f.root = &Node{id: "0", flow: f, mustUpdate: false, markups: make(map[string]*tb.ReplyMarkup)}
 	return f, nil
 }
 
@@ -126,7 +126,7 @@ func (f *Menu) HandleBack(e *Node, c *tb.Callback) bool {
 /*
 	Creates a new node in the flow
 */
-func (f *Menu) NewNode(text string, endpoint NodeEndpoint) *Node {
+func (f *Menu) NewNode(text string, endpoint Callback) *Node {
 	return newNode(f, text, endpoint, f.root)
 }
 
@@ -154,7 +154,7 @@ func (f *Menu) Start(to tb.Recipient, text, lang string) error {
 	if d, ok := f.GetDialog(to.Recipient()); ok {
 		f.bot.Delete(d.Message)
 	}
-	msg, err := f.bot.Send(to, text, f.root.markup[lang])
+	msg, err := f.bot.Send(to, text, f.root.markups[lang])
 	if err != nil {
 		return err
 	}
