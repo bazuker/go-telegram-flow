@@ -46,3 +46,4 @@ To see the full example check **_examples** directory
 		Then("share_location", stageShareLocation, tb.OnText).
 		Then("location", stageLocation, tb.OnLocation)
 ```
+
