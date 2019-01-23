@@ -16,7 +16,7 @@ import (
 	A flow is chain or double-linked list of events organized by type
 */
 type Chain struct {
-	flowId         string
+	id             string
 	root           *Node
 	bot            *tb.Bot
 	defaultLocale  string
@@ -32,97 +32,96 @@ var ErrChainIsEmpty = errors.New("chain has zero handlers")
 */
 func NewChainFlow(id string, bot *tb.Bot) (*Chain, error) {
 	f := &Chain{
+		id:             id,
 		bot:            bot,
 		positions:      make(map[string]*Node),
 		defaultHandler: nil,
 		mx:             sync.RWMutex{},
 	}
-	f.root = &Node{id: id, flow: f, endpoint: nil, prev: nil, next: nil}
+	f.root = &Node{id: id + "_root", flow: f, endpoint: nil, prev: nil, next: nil}
 	return f, nil
 }
 
 /*
 	Get flow's unique identificator
 */
-func (f *Chain) GetId() string {
-	return f.flowId
+func (c *Chain) GetId() string {
+	return c.id
 }
 
 /*
 	Get attached Telegram bot
 */
-func (f *Chain) GetBot() *tb.Bot {
-	return f.bot
+func (c *Chain) GetBot() *tb.Bot {
+	return c.bot
 }
 
 /*
 	Get the root node
 */
-func (f *Chain) GetRoot() *Node {
-	return f.root
+func (c *Chain) GetRoot() *Node {
+	return c.root
 }
 
 /*
 	Gets the user position in the flow
 */
-func (f *Chain) GetPosition(of tb.Recipient) (*Node, bool) {
-	f.mx.RLock()
-	node, ok := f.positions[of.Recipient()]
-	f.mx.RUnlock()
+func (c *Chain) GetPosition(of tb.Recipient) (*Node, bool) {
+	c.mx.RLock()
+	node, ok := c.positions[of.Recipient()]
+	c.mx.RUnlock()
 	return node, ok
 }
 
 /*
 	Sets the user current position in the flow
 */
-func (f *Chain) SetPosition(of tb.Recipient, node *Node) {
-	f.mx.Lock()
-	f.positions[of.Recipient()] = node
-	f.mx.Unlock()
+func (c *Chain) SetPosition(of tb.Recipient, node *Node) {
+	c.mx.Lock()
+	c.positions[of.Recipient()] = node
+	c.mx.Unlock()
 }
 
 /*
 	Deletes the user current position in the flow
 */
-func (f *Chain) DeletePosition(of tb.Recipient) {
-	f.mx.Lock()
-	delete(f.positions, of.Recipient())
-	f.mx.Unlock()
+func (c *Chain) DeletePosition(of tb.Recipient) {
+	c.mx.Lock()
+	delete(c.positions, of.Recipient())
+	c.mx.Unlock()
 }
 
 /*
 	Search for a node with ID
 */
-func (f *Chain) Search(nodeId string) (*Node, bool) {
-	return f.root.SearchDown(nodeId)
+func (c *Chain) Search(nodeId string) (*Node, bool) {
+	return c.root.SearchDown(nodeId)
 }
 
 /*
 	Get the root node
 */
-func (f *Chain) DefaultHandler(endpoint Callback) *Chain {
-	f.defaultHandler = endpoint
-	return f
+func (c *Chain) SetDefaultHandler(endpoint Callback) *Chain {
+	c.defaultHandler = endpoint
+	return c
 }
 
 /*
 	Executes the chain for the user by putting him on a first stage of the chain
 */
-func (f *Chain) Start(to tb.Recipient, text string, options ...interface{}) (err error) {
-	if f.root.next == nil {
+func (c *Chain) Start(to tb.Recipient, text string, options ...interface{}) (err error) {
+	if c.root.next == nil {
 		return ErrChainIsEmpty
 	}
 	if options != nil && len(options) > 0 {
 		// a workaround for nil options
 		// otherwise the message will not be sent
-		_, err = f.GetBot().Send(to, text, options...)
+		_, err = c.GetBot().Send(to, text, options...)
 	} else {
-		_, err = f.GetBot().Send(to, text)
+		_, err = c.GetBot().Send(to, text)
 	}
 	if err == nil {
-		f.mx.Lock()
-		f.positions[to.Recipient()] = f.root.next
-		f.mx.Unlock()
+		c.SetPosition(to, c.root.next)
 	}
 	return
 }
@@ -131,26 +130,26 @@ func (f *Chain) Start(to tb.Recipient, text string, options ...interface{}) (err
 	Process with the next flow iteration
 	Returns true only if the iteration was successful
 */
-func (f *Chain) Process(m *tb.Message) bool {
+func (c *Chain) Process(m *tb.Message) bool {
 	if m == nil {
 		return false
 	}
 	sender := m.Sender
-	node, ok := f.GetPosition(sender)
+	node, ok := c.GetPosition(sender)
 	if !ok {
 		// the flow hasn't started for the user
 		return false
 	}
 	if node == nil {
-		f.DeletePosition(sender)
+		c.DeletePosition(sender)
 		return false
 	}
 	if !node.CheckEvent(m) || node.endpoint == nil {
 		// input is invalid for the particular node
-		if f.defaultHandler != nil {
-			next := f.defaultHandler(node, m)
+		if c.defaultHandler != nil {
+			next := c.defaultHandler(node, m)
 			if next != node {
-				f.SetPosition(sender, next)
+				c.SetPosition(sender, next)
 			}
 			return true
 		}
@@ -158,7 +157,7 @@ func (f *Chain) Process(m *tb.Message) bool {
 	}
 	next := node.endpoint(node, m)
 	if next != node {
-		f.SetPosition(sender, next)
+		c.SetPosition(sender, next)
 	}
 	return true
 }

@@ -17,7 +17,7 @@ import (
 	A flow is essentially a high-level representation of a menu
 */
 type Menu struct {
-	flowId        string
+	id            string
 	serial        uint32
 	root          *Node
 	bot           *tb.Bot
@@ -38,7 +38,7 @@ type Dialog struct {
 
 /*
 	Creates a new flow and initializes the specified locale directory
-	Warning! When setting a flowId treat it gently, like picking a directory name, same rules applies.
+	Warning! When setting a id treat it gently, like picking a directory name, same rules applies.
 	It will fail without a notice if you put special characters or symbols (except for underscore) in it.
 	Suggested names: flow1, flow_1, MyFlow
 */
@@ -48,7 +48,7 @@ func NewMenuFlow(id string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, 
 		return nil, err
 	}
 	f := &Menu{
-		flowId:        id,
+		id:            id,
 		serial:        0,
 		bot:           bot,
 		dialogs:       make(map[string]*Dialog),
@@ -57,7 +57,7 @@ func NewMenuFlow(id string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, 
 		mx:            sync.RWMutex{},
 	}
 	atomic.StoreUint32(&f.serial, 0)
-	f.root = &Node{id: "0", flow: f, mustUpdate: false, markups: make(map[string]*tb.ReplyMarkup)}
+	f.root = &Node{id: id + "_root", flow: f, mustUpdate: false, markups: make(map[string]*tb.ReplyMarkup)}
 	return f, nil
 }
 
@@ -65,7 +65,7 @@ func NewMenuFlow(id string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, 
 	Get flow's unique identificator
 */
 func (f *Menu) GetId() string {
-	return f.flowId
+	return f.id
 }
 
 /*
@@ -142,7 +142,7 @@ func (f *Menu) NewBackNode(text string) *Node {
 	Builds the flow for a specified locale
 */
 func (f *Menu) Build(lang string) *Menu {
-	f.root.build(f.flowId, lang)
+	f.root.build(f.id, lang)
 	return f
 }
 

@@ -26,7 +26,7 @@ func Run(token string) {
 		panic(err)
 	}
 
-	flow.DefaultHandler(defaultResponse).GetRoot().
+	flow.SetDefaultHandler(defaultResponse).GetRoot().
 		Then("name", stageName, tb.OnText).
 		Then("phone", stagePhone, tb.OnContact).
 		Then("share_location", stageShareLocation, tb.OnText).

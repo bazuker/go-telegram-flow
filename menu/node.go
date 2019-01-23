@@ -268,7 +268,7 @@ func (e *Node) build(basePath, lang string) {
 		child.build(e.path, lang)
 		buttons[i] = []tb.InlineButton{
 			{
-				Unique: uniquePrefix + lang + e.flow.flowId + child.id,
+				Unique: uniquePrefix + lang + e.flow.id + child.id,
 				Text:   e.flow.engine.Lang(lang).Tr(child.path),
 			},
 		}
