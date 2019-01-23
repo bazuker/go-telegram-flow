@@ -43,7 +43,7 @@ func NewChainFlow(id string, bot *tb.Bot) (*Chain, error) {
 }
 
 /*
-	Get flow's unique identificator
+	Get chain's unique identificator
 */
 func (c *Chain) GetId() string {
 	return c.id

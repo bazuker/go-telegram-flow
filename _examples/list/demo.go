@@ -29,8 +29,7 @@ func Run(token string) {
 	list.Build("en")
 
 	b.Handle("/start", func(m *tb.Message) {
-		_, err := b.Send(m.Sender, "Hello. Choose a color", list.GetMarkup("en"))
-		if err != nil {
+		if err := list.Start(m.Sender, "hello", "en"); err != nil {
 			log.Println(err)
 		}
 	})
@@ -40,6 +39,8 @@ func Run(token string) {
 	b.Start()
 }
 
-func handle(list *list.List, path string, m *tb.Message) {
-	log.Println("user", m.Sender.Username, "pressed", path)
+func handle(list *list.List, path string, m *tb.Message) bool {
+	log.Println(path)
+	list.GetBot().Send(m.Sender, "You picked "+path)
+	return false // do not quit
 }

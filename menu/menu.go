@@ -62,7 +62,7 @@ func NewMenuFlow(id string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, 
 }
 
 /*
-	Get flow's unique identificator
+	Get menu's unique identificator
 */
 func (f *Menu) GetId() string {
 	return f.id
