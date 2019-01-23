@@ -1,10 +1,10 @@
 package main
 
 import (
-	demo "go-telegram-flow/_examples/list"
+	demo "go-telegram-flow/_examples/menu"
 )
 
 func main() {
-	const token = "767787546:AAGFBDKhm4x6N5Rxv1Z5p1NkaWDdqRL-ias"
+	const token = "YOUR_BOT_TOKEN_HERE"
 	demo.Run(token)
 }
