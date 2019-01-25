@@ -112,6 +112,15 @@ func (l *List) Start(to tb.Recipient, textPath, language string) error {
 }
 
 /*
+	Starts a list flow for the user with a custom text
+*/
+func (l *List) StartWithText(to tb.Recipient, text, language string) error {
+	l.setSession(to, language)
+	_, err := l.bot.Send(to, text, l.GetMarkup(language))
+	return err
+}
+
+/*
 	Retrieves a session language by recipient
 */
 func (l *List) GetSession(of tb.Recipient) (string, bool) {
