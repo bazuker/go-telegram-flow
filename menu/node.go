@@ -199,14 +199,15 @@ func (e *Node) SetLanguage(c *tb.Callback, lang string) *Node {
 /*
 	Updates the menu
 */
-func (e *Node) update(c *tb.Callback, d *Dialog, markup *tb.ReplyMarkup) {
+func (e *Node) update(recipient tb.Recipient, d *Dialog, markup *tb.ReplyMarkup) {
 	newMsg, err := e.flow.bot.Edit(d.Message, d.Message.Text, markup)
 	if err != nil {
-		log.Println("failed to continue", c.Sender.ID, err)
+		log.Println("failed to continue", recipient.Recipient(), err)
 		return
 	}
 	e.mustUpdate = false
 	d.Message = newMsg
+	d.Position = e
 }
 
 /*
@@ -220,7 +221,7 @@ func (e *Node) back(c *tb.Callback) *Node {
 	}
 	if e.prev == nil || e.prev.prev == nil {
 		if e.mustUpdate {
-			e.update(c, d, e.flow.root.markups[d.Language])
+			e.update(c.Sender, d, e.flow.root.markups[d.Language])
 			return e
 		}
 		return nil
@@ -231,6 +232,7 @@ func (e *Node) back(c *tb.Callback) *Node {
 		return nil
 	}
 	d.Message = newMsg
+	d.Position = e.prev
 	return e.prev
 }
 
@@ -251,7 +253,7 @@ func (e *Node) next(c *tb.Callback) {
 	if nodes < 1 {
 		markup = e.prev.markups
 	}
-	e.update(c, d, markup[d.Language])
+	e.update(c.Sender, d, markup[d.Language])
 }
 
 /*

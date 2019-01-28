@@ -7,6 +7,7 @@ package menu
 */
 
 import (
+	"fmt"
 	"github.com/tucnak/tr"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"sync"
@@ -34,6 +35,7 @@ type Menu struct {
 type Dialog struct {
 	Message  *tb.Message
 	Language string
+	Position *Node
 }
 
 /*
@@ -110,6 +112,24 @@ func (f *Menu) setDialog(id string, dialog *Dialog) {
 }
 
 /*
+	Sets a new caption for the menu
+	The caption will be updated right away
+	Params are automatically placed in the text if provided
+*/
+func (f *Menu) SetCaption(recipient tb.Recipient, text string, params ...interface{}) *Menu {
+	if d, ok := f.GetDialog(recipient.Recipient()); ok {
+		if len(params) > 0 {
+			text = fmt.Sprintf(text, params...)
+		}
+		if d.Message.Text != text {
+			d.Message.Text = text
+			d.Position.update(recipient, d, d.Position.GetMarkup(d.Language))
+		}
+	}
+	return f
+}
+
+/*
 	Helper handler for forward buttons
 */
 func (f *Menu) HandleForward(e *Node, c *tb.Callback) bool {
@@ -158,6 +178,6 @@ func (f *Menu) Start(to tb.Recipient, text, lang string) error {
 	if err != nil {
 		return err
 	}
-	f.setDialog(to.Recipient(), &Dialog{Message: msg, Language: lang})
+	f.setDialog(to.Recipient(), &Dialog{Message: msg, Language: lang, Position: f.root})
 	return nil
 }
