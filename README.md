@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/kisulken/go-telegram-flow)](https://goreportcard.com/report/github.com/kisulken/go-telegram-flow)
+
 # go-telegram-flow
 Flow is a small framework for Telegram that is based on [this telegram bot package](https://github.com/tucnak/telebot) and [this locale package](https://github.com/tucnak/tr)
 
