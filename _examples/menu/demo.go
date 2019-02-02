@@ -1,6 +1,7 @@
 package menu
 
 import (
+	"github.com/tucnak/tr"
 	"go-telegram-flow/menu"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"log"
@@ -21,7 +22,11 @@ func Run(token string) {
 
 	const defaultLocale = "en"
 
-	flow, err := menu.NewMenuFlow("flow1", b, "_examples/menu/lang", defaultLocale)
+	if err := tr.Init("_examples/menu/lang", defaultLocale); err != nil {
+		panic(err)
+	}
+
+	flow, err := menu.NewMenuFlow("flow1", b, tr.DefaultEngine)
 	if err != nil {
 		panic(err)
 	}
@@ -73,50 +78,50 @@ func Run(token string) {
 	b.Start()
 }
 
-func userPressGreeting(e *menu.Node, c *tb.Callback) bool {
+func userPressGreeting(e *menu.Node, c *tb.Callback) int {
 	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	if _, err := e.GetFlow().GetBot().Send(c.Sender, "Hi there"); err != nil {
 		log.Println(err)
 	}
-	return true // continue
+	return menu.Forward // continue
 }
 
-func userOrderSushi(e *menu.Node, c *tb.Callback) bool {
+func userOrderSushi(e *menu.Node, c *tb.Callback) int {
 	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	e.SetCaption(c, "Added "+e.GetText()+" to your order")
 	total += 5
-	return true
+	return menu.Forward
 }
 
-func userOrderPizza(e *menu.Node, c *tb.Callback) bool {
+func userOrderPizza(e *menu.Node, c *tb.Callback) int {
 	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	e.SetCaption(c, "Added "+e.GetText()+" to your order")
 	total += 10
-	return true
+	return menu.Forward
 }
 
-func userPressInvoice(e *menu.Node, c *tb.Callback) bool {
+func userPressInvoice(e *menu.Node, c *tb.Callback) int {
 	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	e.SetCaption(c, "Your total is $"+strconv.Itoa(total))
-	return true
+	return menu.Forward
 }
 
-func userPressLanguage(e *menu.Node, c *tb.Callback) bool {
+func userPressLanguage(e *menu.Node, c *tb.Callback) int {
 	log.Println(c.Sender.Recipient(), "press", e.GetText())
 	if e.GetLanguage(c) == "en" {
 		e.SetLanguage(c, "ru")
 	} else {
 		e.SetLanguage(c, "en")
 	}
-	return true // continue
+	return menu.Forward // continue
 }
 
-func userPress(e *menu.Node, c *tb.Callback) bool {
+func userPress(e *menu.Node, c *tb.Callback) int {
 	log.Println(c.Sender.Recipient(), "press", e.GetText())
-	return true
+	return menu.Forward
 }
 
-func userPressBack(e *menu.Node, c *tb.Callback) bool {
+func userPressBack(e *menu.Node, c *tb.Callback) int {
 	log.Println(c.Sender.Recipient(), "press", e.GetText())
-	return false // go back
+	return menu.Back // go back
 }

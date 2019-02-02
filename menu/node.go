@@ -6,14 +6,20 @@ import (
 	"log"
 	"strconv"
 	"sync/atomic"
+	"time"
 )
 
 /*
 	Callback function declaration that includes a "node" that a call was made from
 */
-type Callback func(e *Node, c *tb.Callback) bool
+type Callback func(e *Node, c *tb.Callback) int
 
-const uniquePrefix = "menuNode"
+const (
+	uniquePrefix = "_node_"
+	Stay         = 0
+	Forward      = 1
+	Back         = -1
+)
 
 /*
 	An element of a menu that holds all required information by a page
@@ -270,7 +276,7 @@ func (e *Node) build(basePath, lang string) {
 		child.build(e.path, lang)
 		buttons[i] = []tb.InlineButton{
 			{
-				Unique: uniquePrefix + lang + e.flow.id + child.id,
+				Unique: strconv.FormatInt(time.Now().Unix(), 10) + uniquePrefix + lang + child.id,
 				Text:   e.flow.engine.Lang(lang).Tr(child.path),
 			},
 		}
@@ -294,9 +300,10 @@ func (e *Node) handle(c *tb.Callback) {
 		log.Println("failed to respond", c.Sender.ID, err)
 		return
 	}
-	if e.endpoint(e, c) {
+	result := e.endpoint(e, c)
+	if result == Forward {
 		e.next(c)
-	} else {
+	} else if result == Back {
 		e.back(c)
 	}
 }

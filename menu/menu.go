@@ -8,6 +8,7 @@ package menu
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/tucnak/tr"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"sync"
@@ -44,19 +45,14 @@ type Dialog struct {
 	It will fail without a notice if you put special characters or symbols (except for underscore) in it.
 	Suggested names: flow1, flow_1, MyFlow
 */
-func NewMenuFlow(id string, bot *tb.Bot, langDir, defaultLocale string) (*Menu, error) {
-	engine, err := tr.NewEngine(langDir, defaultLocale, false)
-	if err != nil {
-		return nil, err
-	}
+func NewMenuFlow(id string, bot *tb.Bot, engine *tr.Engine) (*Menu, error) {
 	f := &Menu{
-		id:            id,
-		serial:        0,
-		bot:           bot,
-		dialogs:       make(map[string]*Dialog),
-		defaultLocale: defaultLocale,
-		engine:        engine,
-		mx:            sync.RWMutex{},
+		id:      id,
+		serial:  0,
+		bot:     bot,
+		dialogs: make(map[string]*Dialog),
+		engine:  engine,
+		mx:      sync.RWMutex{},
 	}
 	atomic.StoreUint32(&f.serial, 0)
 	f.root = &Node{id: id + "_root", flow: f, mustUpdate: false, markups: make(map[string]*tb.ReplyMarkup)}
@@ -112,6 +108,16 @@ func (f *Menu) setDialog(id string, dialog *Dialog) {
 }
 
 /*
+	Deletes a dialog by a user id
+	Only internal use is intended
+*/
+func (f *Menu) deleteDialog(id string) {
+	f.mx.Lock()
+	delete(f.dialogs, id)
+	f.mx.Unlock()
+}
+
+/*
 	Sets a new caption for the menu
 	The caption will be updated right away
 	Params are automatically placed in the text if provided
@@ -132,15 +138,15 @@ func (f *Menu) SetCaption(recipient tb.Recipient, text string, params ...interfa
 /*
 	Helper handler for forward buttons
 */
-func (f *Menu) HandleForward(e *Node, c *tb.Callback) bool {
-	return true
+func (f *Menu) HandleForward(e *Node, c *tb.Callback) int {
+	return Forward
 }
 
 /*
 	Helper handler for back buttons
 */
-func (f *Menu) HandleBack(e *Node, c *tb.Callback) bool {
-	return false
+func (f *Menu) HandleBack(e *Node, c *tb.Callback) int {
+	return Back
 }
 
 /*
@@ -167,17 +173,69 @@ func (f *Menu) Build(lang string) *Menu {
 }
 
 /*
-	Sends a new instance of a menu to the user with a specified locale
+	Sends a new instance of a menu to a user with a specified locale
 	Tries to delete the old menu before sending a new one
 */
 func (f *Menu) Start(to tb.Recipient, text, lang string) error {
 	if d, ok := f.GetDialog(to.Recipient()); ok {
 		f.bot.Delete(d.Message)
 	}
-	msg, err := f.bot.Send(to, text, f.root.markups[lang])
+	msg, err := f.bot.Send(to, text, f.root.markups[lang], tb.Silent)
 	if err != nil {
 		return err
 	}
 	f.setDialog(to.Recipient(), &Dialog{Message: msg, Language: lang, Position: f.root})
+	return nil
+}
+
+/*
+	Sends an instance of a menu to a user starting at a specified node
+	Tries to delete the old menu before sending a new one
+*/
+func (f *Menu) StartAt(to tb.Recipient, text, lang string, at *Node) error {
+	d, ok := f.GetDialog(to.Recipient())
+	if ok {
+		f.bot.Delete(d.Message)
+	} else {
+		d = &Dialog{}
+	}
+	msg, err := f.bot.Send(to, text, at.markups[lang], tb.Silent)
+	if err != nil {
+		return err
+	}
+	d.Message = msg
+	d.Language = lang
+	d.Position = at
+	f.setDialog(to.Recipient(), d)
+	return nil
+}
+
+/*
+	Takes a user to a specified menu position (page)
+*/
+func (f *Menu) MoveTo(to tb.Recipient, text, lang string, position *Node) error {
+	d, ok := f.GetDialog(to.Recipient())
+	if !ok {
+		return errors.New("dialog not found")
+	}
+	msg, err := f.bot.Edit(d.Message, text, position.markups[lang], tb.Silent)
+	if err != nil {
+		return err
+	}
+	d.Message = msg
+	d.Language = lang
+	d.Position = position
+	f.setDialog(to.Recipient(), d)
+	return nil
+}
+
+/*
+	Removes the menu from a user and deletes the session
+*/
+func (f *Menu) Stop(to tb.Recipient, text, lang string) error {
+	if d, ok := f.GetDialog(to.Recipient()); ok {
+		f.bot.Delete(d.Message)
+	}
+	f.deleteDialog(to.Recipient())
 	return nil
 }
